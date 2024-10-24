@@ -3,30 +3,31 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Quitamos la marca de debug
+      debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }
 }
 
+//Pagina Principal
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Fondo negro
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espacio entre elementos
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Texto centrado
             Padding(
               padding: const EdgeInsets.only(top: 100.0),
               child: Column(
@@ -51,16 +52,15 @@ class HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            // Botón de "Comenzar"
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // Color de fondo del botón
+                    backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30), // Bordes redondeados
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   onPressed: () {
@@ -74,7 +74,7 @@ class HomePage extends StatelessWidget {
                     child: Text(
                       'Comenzar',
                       style: TextStyle(
-                        color: Colors.black, // Texto en negro
+                        color: Colors.black,
                         fontSize: 18,
                       ),
                     ),
@@ -89,90 +89,215 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class CoursePage extends StatelessWidget {
+//Pagina donde se agregan Cursos
+class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Controlador para el TextField
-    TextEditingController nameController = TextEditingController();
+  _CoursePageState createState() => _CoursePageState();
+}
 
+class _CoursePageState extends State<CoursePage> {
+  List<String> courses = []; // Lista de cursos agregados
+
+  TextEditingController courseController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 50),
-              child: Text(
-                'Bienvenido Jorge',
-                style: TextStyle(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: const Text('Mis Cursos', style: TextStyle(color: Colors.white)),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: courses.length,
+              itemBuilder: (context, index) {
+                return Card(
                   color: Colors.white,
-                  fontSize: 30,
-                ),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(bottom: 50),
-              child: Text(
-                'Mis Cursos',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                ),
-              ),
-            ),
-            // Botón en la parte inferior derecha
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: FloatingActionButton(
-                  backgroundColor: Colors.white,
-                  onPressed: () {
-                    // Mostrar la ventana emergente con el TextField
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Agrega un nombre'),
-                          content: TextField(
-                            controller: nameController, // Controlador del TextField
-                            decoration: const InputDecoration(
-                              hintText: 'Escribe un nombre',
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(); // Cierra la ventana
-                              },
-                              child: const Text('Cancelar'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // De momento no hace nada con el nombre ingresado
-                                print("Nombre ingresado: ${nameController.text}");
-                              },
-                              child: const Text('Aceptar'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.black,
-                    size: 30,
+                  child: ListTile(
+                    title: Text(courses[index]),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ClassPage(courseName: courses[index]),
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Agregar Curso'),
+                content: TextField(
+                  controller: courseController,
+                  decoration: const InputDecoration(hintText: 'Nombre del curso'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        courses.add(courseController.text);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Aceptar'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
 }
+
+//Pagina de la Clase
+class ClassPage extends StatefulWidget {
+  final String courseName;
+
+  const ClassPage({super.key, required this.courseName});
+
+  @override
+  _ClassPageState createState() => _ClassPageState();
+}
+
+class _ClassPageState extends State<ClassPage> {
+  List<String> classes = []; // Lista de clases agregadas
+
+  TextEditingController classController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(widget.courseName, style: const TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Regresa a CoursePage
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Notas personales',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: classes.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(classes[index]),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ContentPage(className: classes[index]),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Agregar Clase'),
+                content: TextField(
+                  controller: classController,
+                  decoration: const InputDecoration(hintText: 'Nombre de la clase'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        classes.add(classController.text);
+                      });
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Aceptar'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.black),
+      ),
+    );
+  }
+}
+
+//Pagina del Contenido de la Clase
+class ContentPage extends StatelessWidget {
+  final String className;
+
+  const ContentPage({super.key, required this.className});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(className, style: const TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Regresa a ClassPage
+          },
+        ),
+      ),
+      body: const Center(
+        child: Text('Contenido de la clase'),
+      ),
+    );
+  }
+}
+
+
