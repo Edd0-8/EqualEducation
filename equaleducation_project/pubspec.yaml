@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
-  # Agregamos las nuevas dependencias para SQLite
+  # Dependencias SQLite
   sqflite: ^2.0.0+3
   path: ^1.8.0
 

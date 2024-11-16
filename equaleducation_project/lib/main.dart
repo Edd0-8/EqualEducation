@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'db/database_helper.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -66,7 +68,7 @@ class HomePage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CoursePage()),
+                      MaterialPageRoute(builder: (context) => CoursesScreen()),
                     );
                   },
                   child: const Padding(
@@ -89,215 +91,242 @@ class HomePage extends StatelessWidget {
   }
 }
 
-//Pagina donde se agregan Cursos
-class CoursePage extends StatefulWidget {
-  const CoursePage({super.key});
 
+
+
+//Pagina donde se agregan Cursos
+class CoursesScreen extends StatefulWidget {
   @override
-  _CoursePageState createState() => _CoursePageState();
+  _CoursesScreenState createState() => _CoursesScreenState();
 }
 
-class _CoursePageState extends State<CoursePage> {
-  List<String> courses = []; // Lista de cursos agregados
+class _CoursesScreenState extends State<CoursesScreen> {
+  final TextEditingController _courseController = TextEditingController();
+  List<Map<String, dynamic>> _courses = [];
 
-  TextEditingController courseController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _loadCourses();
+  }
+
+  Future<void> _loadCourses() async {
+    final data = await DatabaseHelper().getCourses();
+    setState(() {
+      _courses = data;
+    });
+  }
+
+  Future<void> _addCourse() async {
+    if (_courseController.text.isNotEmpty) {
+      await DatabaseHelper().insertCourse(_courseController.text);
+      _courseController.clear();
+      _loadCourses();  // Recargar la lista de cursos
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Mis Cursos', style: TextStyle(color: Colors.white)),
+        title: Text('Courses'),
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _courseController,
+              decoration: InputDecoration(
+                labelText: 'Course Name',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: _addCourse,
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
-              itemCount: courses.length,
+              itemCount: _courses.length,
               itemBuilder: (context, index) {
-                return Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    title: Text(courses[index]),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ClassPage(courseName: courses[index]),
-                        ),
-                      );
-                    },
-                  ),
+                final course = _courses[index];
+                return ListTile(
+                  title: Text(course['name']),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ClassesScreen(courseId: course['id']),
+                      ),
+                    );
+                  },
                 );
               },
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Agregar Curso'),
-                content: TextField(
-                  controller: courseController,
-                  decoration: const InputDecoration(hintText: 'Nombre del curso'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        courses.add(courseController.text);
-                      });
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Aceptar'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
 }
 
-//Pagina de la Clase
-class ClassPage extends StatefulWidget {
-  final String courseName;
 
-  const ClassPage({super.key, required this.courseName});
+
+
+
+
+//Pagina de la Clase
+class ClassesScreen extends StatefulWidget {
+  final int courseId;
+  ClassesScreen({required this.courseId});
 
   @override
-  _ClassPageState createState() => _ClassPageState();
+  _ClassesScreenState createState() => _ClassesScreenState();
 }
 
-class _ClassPageState extends State<ClassPage> {
-  List<String> classes = []; // Lista de clases agregadas
+class _ClassesScreenState extends State<ClassesScreen> {
+  final TextEditingController _classController = TextEditingController();
+  List<Map<String, dynamic>> _classes = [];
 
-  TextEditingController classController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    final data = await DatabaseHelper().getClasses(widget.courseId);
+    setState(() {
+      _classes = data;
+    });
+  }
+
+  Future<void> _addClass() async {
+    if (_classController.text.isNotEmpty) {
+      await DatabaseHelper().insertClass(_classController.text, widget.courseId);
+      _classController.clear();
+      _loadClasses();  // Recargar la lista de clases
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(widget.courseName, style: const TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context); // Regresa a CoursePage
-          },
-        ),
+        title: Text('Classes for Course ID: ${widget.courseId}'),
       ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Notas personales',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _classController,
+              decoration: InputDecoration(
+                labelText: 'Class Name',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: _addClass,
+                ),
+              ),
             ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: classes.length,
+              itemCount: _classes.length,
               itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    title: Text(classes[index]),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ContentPage(className: classes[index]),
-                        ),
-                      );
-                    },
-                  ),
+                final classItem = _classes[index];
+                return ListTile(
+                  title: Text(classItem['name']),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContentsScreen(classId: classItem['id']),
+                      ),
+                    );
+                  },
                 );
               },
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Agregar Clase'),
-                content: TextField(
-                  controller: classController,
-                  decoration: const InputDecoration(hintText: 'Nombre de la clase'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        classes.add(classController.text);
-                      });
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Aceptar'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
 }
 
 //Pagina del Contenido de la Clase
-class ContentPage extends StatelessWidget {
-  final String className;
+class ContentsScreen extends StatefulWidget {
+  final int classId;
+  ContentsScreen({required this.classId});
 
-  const ContentPage({super.key, required this.className});
+  @override
+  _ContentsScreenState createState() => _ContentsScreenState();
+}
+
+class _ContentsScreenState extends State<ContentsScreen> {
+  final TextEditingController _contentController = TextEditingController();
+  List<Map<String, dynamic>> _contents = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContents();
+  }
+
+  Future<void> _loadContents() async {
+    final data = await DatabaseHelper().getContents(widget.classId);
+    setState(() {
+      _contents = data;
+    });
+  }
+
+  Future<void> _addContent() async {
+    if (_contentController.text.isNotEmpty) {
+      await DatabaseHelper().insertContent(_contentController.text, widget.classId);
+      _contentController.clear();
+      _loadContents();  // Recargar la lista de contenidos
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(className, style: const TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context); // Regresa a ClassPage
-          },
-        ),
+        title: Text('Contents for Class ID: ${widget.classId}'),
       ),
-      body: const Center(
-        child: Text('Contenido de la clase'),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _contentController,
+              decoration: InputDecoration(
+                labelText: 'Content Description',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: _addContent,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _contents.length,
+              itemBuilder: (context, index) {
+                final content = _contents[index];
+                return ListTile(
+                  title: Text(content['description']),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
 
 
