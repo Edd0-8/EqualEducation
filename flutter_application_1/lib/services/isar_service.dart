@@ -55,10 +55,11 @@ class IsarService {
   }
 
   // Método para eliminar un curso
-  Future<void> deleteCourse(int id) async {
+  Future<void> deleteCourse(int courseId) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
-      await isar.courses.delete(id);
+      await isar.signatures.filter().courseIdEqualTo(courseId).deleteAll();
+      await isar.courses.delete(courseId);
     });
   }
 
@@ -67,6 +68,7 @@ class IsarService {
     final isar = await _openDB();
     await isar.writeTxn(() async {
       await isar.signatures.put(signature);
+      
     });
     print('Asignatura guardada: Name: ${signature.name}, Id: ${signature.id}, Date: ${signature.date}, IdCourse: ${signature.courseId}');
   }

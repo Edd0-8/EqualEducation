@@ -88,7 +88,8 @@ class _CourseScreenState extends State<CourseScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showCourseFormDialog(context); // Crear nuevo curso si no hay curso seleccionado
+          _showCourseFormDialog(
+              context); // Crear nuevo curso si no hay curso seleccionado
         },
         child: const Icon(Icons.add),
       ),
@@ -134,12 +135,13 @@ class _CourseScreenState extends State<CourseScreen> {
             TextButton(
               onPressed: () async {
                 final newCourse = Course()
-                  ..id = course?.id as Id // Mantener el id para la edición
+                  // ..id = course?.id as Id // Mantener el id para la edición
                   ..titulo = titleController.text
                   ..professor = professorController.text
                   ..description = descriptionController.text;
 
-                await isarService.addCourse(newCourse); // Agrega o actualiza el curso
+                await isarService
+                    .addCourse(newCourse); // Agrega o actualiza el curso
 
                 titleController.clear();
                 professorController.clear();

@@ -26,6 +26,11 @@ const BlockSchema = CollectionSchema(
       id: 1,
       name: r'blockType',
       type: IsarType.string,
+    ),
+    r'contentId': PropertySchema(
+      id: 2,
+      name: r'contentId',
+      type: IsarType.long,
     )
   },
   estimateSize: _blockEstimateSize,
@@ -34,14 +39,7 @@ const BlockSchema = CollectionSchema(
   deserializeProp: _blockDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {
-    r'content': LinkSchema(
-      id: -7907876634034275707,
-      name: r'content',
-      target: r'Content',
-      single: true,
-    )
-  },
+  links: {},
   embeddedSchemas: {},
   getId: _blockGetId,
   getLinks: _blockGetLinks,
@@ -68,6 +66,7 @@ void _blockSerialize(
 ) {
   writer.writeString(offsets[0], object.blockContent);
   writer.writeString(offsets[1], object.blockType);
+  writer.writeLong(offsets[2], object.contentId);
 }
 
 Block _blockDeserialize(
@@ -79,6 +78,7 @@ Block _blockDeserialize(
   final object = Block();
   object.blockContent = reader.readString(offsets[0]);
   object.blockType = reader.readString(offsets[1]);
+  object.contentId = reader.readLong(offsets[2]);
   object.id = id;
   return object;
 }
@@ -94,6 +94,8 @@ P _blockDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -104,12 +106,11 @@ Id _blockGetId(Block object) {
 }
 
 List<IsarLinkBase<dynamic>> _blockGetLinks(Block object) {
-  return [object.content];
+  return [];
 }
 
 void _blockAttach(IsarCollection<dynamic> col, Id id, Block object) {
   object.id = id;
-  object.content.attach(col, col.isar.collection<Content>(), r'content', id);
 }
 
 extension BlockQueryWhereSort on QueryBuilder<Block, Block, QWhere> {
@@ -448,6 +449,59 @@ extension BlockQueryFilter on QueryBuilder<Block, Block, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Block, Block, QAfterFilterCondition> contentIdEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'contentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> contentIdGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'contentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> contentIdLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'contentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> contentIdBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'contentId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Block, Block, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -503,20 +557,7 @@ extension BlockQueryFilter on QueryBuilder<Block, Block, QFilterCondition> {
 
 extension BlockQueryObject on QueryBuilder<Block, Block, QFilterCondition> {}
 
-extension BlockQueryLinks on QueryBuilder<Block, Block, QFilterCondition> {
-  QueryBuilder<Block, Block, QAfterFilterCondition> content(
-      FilterQuery<Content> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'content');
-    });
-  }
-
-  QueryBuilder<Block, Block, QAfterFilterCondition> contentIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'content', 0, true, 0, true);
-    });
-  }
-}
+extension BlockQueryLinks on QueryBuilder<Block, Block, QFilterCondition> {}
 
 extension BlockQuerySortBy on QueryBuilder<Block, Block, QSortBy> {
   QueryBuilder<Block, Block, QAfterSortBy> sortByBlockContent() {
@@ -540,6 +581,18 @@ extension BlockQuerySortBy on QueryBuilder<Block, Block, QSortBy> {
   QueryBuilder<Block, Block, QAfterSortBy> sortByBlockTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'blockType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> sortByContentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'contentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> sortByContentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'contentId', Sort.desc);
     });
   }
 }
@@ -566,6 +619,18 @@ extension BlockQuerySortThenBy on QueryBuilder<Block, Block, QSortThenBy> {
   QueryBuilder<Block, Block, QAfterSortBy> thenByBlockTypeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'blockType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> thenByContentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'contentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> thenByContentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'contentId', Sort.desc);
     });
   }
 
@@ -596,6 +661,12 @@ extension BlockQueryWhereDistinct on QueryBuilder<Block, Block, QDistinct> {
       return query.addDistinctBy(r'blockType', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<Block, Block, QDistinct> distinctByContentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'contentId');
+    });
+  }
 }
 
 extension BlockQueryProperty on QueryBuilder<Block, Block, QQueryProperty> {
@@ -614,6 +685,12 @@ extension BlockQueryProperty on QueryBuilder<Block, Block, QQueryProperty> {
   QueryBuilder<Block, String, QQueryOperations> blockTypeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'blockType');
+    });
+  }
+
+  QueryBuilder<Block, int, QQueryOperations> contentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'contentId');
     });
   }
 }

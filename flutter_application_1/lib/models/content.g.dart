@@ -26,6 +26,11 @@ const ContentSchema = CollectionSchema(
       id: 1,
       name: r'name',
       type: IsarType.string,
+    ),
+    r'signatureId': PropertySchema(
+      id: 2,
+      name: r'signatureId',
+      type: IsarType.long,
     )
   },
   estimateSize: _contentEstimateSize,
@@ -34,20 +39,7 @@ const ContentSchema = CollectionSchema(
   deserializeProp: _contentDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {
-    r'classLink': LinkSchema(
-      id: -4552976328973585241,
-      name: r'classLink',
-      target: r'Signature',
-      single: true,
-    ),
-    r'blocks': LinkSchema(
-      id: 4640241158464830689,
-      name: r'blocks',
-      target: r'Block',
-      single: false,
-    )
-  },
+  links: {},
   embeddedSchemas: {},
   getId: _contentGetId,
   getLinks: _contentGetLinks,
@@ -79,6 +71,7 @@ void _contentSerialize(
 ) {
   writer.writeString(offsets[0], object.description);
   writer.writeString(offsets[1], object.name);
+  writer.writeLong(offsets[2], object.signatureId);
 }
 
 Content _contentDeserialize(
@@ -91,6 +84,7 @@ Content _contentDeserialize(
   object.description = reader.readStringOrNull(offsets[0]);
   object.id = id;
   object.name = reader.readString(offsets[1]);
+  object.signatureId = reader.readLong(offsets[2]);
   return object;
 }
 
@@ -105,6 +99,8 @@ P _contentDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -115,14 +111,11 @@ Id _contentGetId(Content object) {
 }
 
 List<IsarLinkBase<dynamic>> _contentGetLinks(Content object) {
-  return [object.classLink, object.blocks];
+  return [];
 }
 
 void _contentAttach(IsarCollection<dynamic> col, Id id, Content object) {
   object.id = id;
-  object.classLink
-      .attach(col, col.isar.collection<Signature>(), r'classLink', id);
-  object.blocks.attach(col, col.isar.collection<Block>(), r'blocks', id);
 }
 
 extension ContentQueryWhereSort on QueryBuilder<Content, Content, QWhere> {
@@ -530,82 +523,66 @@ extension ContentQueryFilter
       ));
     });
   }
-}
 
-extension ContentQueryObject
-    on QueryBuilder<Content, Content, QFilterCondition> {}
-
-extension ContentQueryLinks
-    on QueryBuilder<Content, Content, QFilterCondition> {
-  QueryBuilder<Content, Content, QAfterFilterCondition> classLink(
-      FilterQuery<Signature> q) {
+  QueryBuilder<Content, Content, QAfterFilterCondition> signatureIdEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'classLink');
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'signatureId',
+        value: value,
+      ));
     });
   }
 
-  QueryBuilder<Content, Content, QAfterFilterCondition> classLinkIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'classLink', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocks(
-      FilterQuery<Block> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'blocks');
-    });
-  }
-
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'blocks', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'blocks', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'blocks', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksLengthLessThan(
-    int length, {
+  QueryBuilder<Content, Content, QAfterFilterCondition> signatureIdGreaterThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'blocks', 0, true, length, include);
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'signatureId',
+        value: value,
+      ));
     });
   }
 
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksLengthGreaterThan(
-    int length, {
+  QueryBuilder<Content, Content, QAfterFilterCondition> signatureIdLessThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'blocks', length, include, 999999, true);
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'signatureId',
+        value: value,
+      ));
     });
   }
 
-  QueryBuilder<Content, Content, QAfterFilterCondition> blocksLengthBetween(
+  QueryBuilder<Content, Content, QAfterFilterCondition> signatureIdBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'blocks', lower, includeLower, upper, includeUpper);
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'signatureId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
+
+extension ContentQueryObject
+    on QueryBuilder<Content, Content, QFilterCondition> {}
+
+extension ContentQueryLinks
+    on QueryBuilder<Content, Content, QFilterCondition> {}
 
 extension ContentQuerySortBy on QueryBuilder<Content, Content, QSortBy> {
   QueryBuilder<Content, Content, QAfterSortBy> sortByDescription() {
@@ -629,6 +606,18 @@ extension ContentQuerySortBy on QueryBuilder<Content, Content, QSortBy> {
   QueryBuilder<Content, Content, QAfterSortBy> sortByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Content, Content, QAfterSortBy> sortBySignatureId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'signatureId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Content, Content, QAfterSortBy> sortBySignatureIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'signatureId', Sort.desc);
     });
   }
 }
@@ -670,6 +659,18 @@ extension ContentQuerySortThenBy
       return query.addSortBy(r'name', Sort.desc);
     });
   }
+
+  QueryBuilder<Content, Content, QAfterSortBy> thenBySignatureId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'signatureId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Content, Content, QAfterSortBy> thenBySignatureIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'signatureId', Sort.desc);
+    });
+  }
 }
 
 extension ContentQueryWhereDistinct
@@ -685,6 +686,12 @@ extension ContentQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Content, Content, QDistinct> distinctBySignatureId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'signatureId');
     });
   }
 }
@@ -706,6 +713,12 @@ extension ContentQueryProperty
   QueryBuilder<Content, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<Content, int, QQueryOperations> signatureIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'signatureId');
     });
   }
 }

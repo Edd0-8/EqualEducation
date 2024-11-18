@@ -39,14 +39,7 @@ const SignatureSchema = CollectionSchema(
   deserializeProp: _signatureDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {
-    r'contents': LinkSchema(
-      id: 6760296323682739516,
-      name: r'contents',
-      target: r'Content',
-      single: false,
-    )
-  },
+  links: {},
   embeddedSchemas: {},
   getId: _signatureGetId,
   getLinks: _signatureGetLinks,
@@ -112,12 +105,11 @@ Id _signatureGetId(Signature object) {
 }
 
 List<IsarLinkBase<dynamic>> _signatureGetLinks(Signature object) {
-  return [object.contents];
+  return [];
 }
 
 void _signatureAttach(IsarCollection<dynamic> col, Id id, Signature object) {
   object.id = id;
-  object.contents.attach(col, col.isar.collection<Content>(), r'contents', id);
 }
 
 extension SignatureQueryWhereSort
@@ -493,67 +485,7 @@ extension SignatureQueryObject
     on QueryBuilder<Signature, Signature, QFilterCondition> {}
 
 extension SignatureQueryLinks
-    on QueryBuilder<Signature, Signature, QFilterCondition> {
-  QueryBuilder<Signature, Signature, QAfterFilterCondition> contents(
-      FilterQuery<Content> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'contents');
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition>
-      contentsLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'contents', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition> contentsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'contents', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition>
-      contentsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'contents', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition>
-      contentsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'contents', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition>
-      contentsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'contents', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<Signature, Signature, QAfterFilterCondition>
-      contentsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'contents', lower, includeLower, upper, includeUpper);
-    });
-  }
-}
+    on QueryBuilder<Signature, Signature, QFilterCondition> {}
 
 extension SignatureQuerySortBy on QueryBuilder<Signature, Signature, QSortBy> {
   QueryBuilder<Signature, Signature, QAfterSortBy> sortByCourseId() {

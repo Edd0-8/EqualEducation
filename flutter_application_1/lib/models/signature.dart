@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
-import 'package:flutter_application_1/models/course.dart';
-import 'package:flutter_application_1/models/content.dart';
+//import 'package:flutter_application_1/models/course.dart';
+// import 'package:flutter_application_1/models/content.dart';
 
 part 'signature.g.dart';
 
@@ -13,6 +13,6 @@ class Signature {
   late String name;
   late DateTime date;
 
-  final contents = IsarLinks<Content>(); // Relación con la colección Content
+  //final contents = IsarLinks<Content>(); // Relación con la colección Content
 }
 
