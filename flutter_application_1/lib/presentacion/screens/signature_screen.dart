@@ -39,11 +39,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (Navigator.canPop(context)) {
-              context.pop();
-            } else {
-              context.go('/course');
-            }
+            context.go('/course'); // Regresa a la pantalla de cursos
           },
         ),
       ),
@@ -59,8 +55,8 @@ class _SignatureScreenState extends State<SignatureScreen> {
                   title: Text(signature.name),
                   subtitle: Text('Fecha: $formattedDate'),
                   onTap: () {
-                    // Navegar a la pantalla de Content
-                    context.go('/content', extra: signature.id);
+                    // Navegar a ContentScreen con courseId y signatureId
+                    context.go('/content/${widget.courseId}/${signature.id}');
                   },
                   onLongPress: () {
                     _showOptionsDialog(context, signature);
@@ -83,20 +79,20 @@ class _SignatureScreenState extends State<SignatureScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Opciones de Asignatura'),
-          content: Text('¿Qué deseas hacer con esta asignatura?'),
+          title: const Text('Opciones de Asignatura'),
+          content: const Text('¿Qué deseas hacer con esta asignatura?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _showEditSignatureFormDialog(context, signature); // Editar
+                _showEditSignatureFormDialog(context, signature);
               },
               child: const Text('Editar'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _confirmDeleteSignature(signature); // Eliminar
+                _confirmDeleteSignature(signature);
               },
               child: const Text('Eliminar'),
             ),
@@ -117,15 +113,15 @@ class _SignatureScreenState extends State<SignatureScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
+                Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
                 await isarService.deleteSignature(signature.id);
-                Navigator.of(context).pop(); // Cierra el diálogo
-                _loadSignatures(); // Recargar las asignaturas
+                Navigator.of(context).pop();
+                _loadSignatures();
               },
               child: const Text('Aceptar'),
             ),
@@ -156,17 +152,17 @@ class _SignatureScreenState extends State<SignatureScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
+                Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
                 if (nameController.text.isNotEmpty) {
-                  signature.name = nameController.text; // Actualiza el nombre
+                  signature.name = nameController.text;
                   await isarService.updateSignature(signature);
-                  Navigator.of(context).pop(); // Cierra el diálogo
-                  _loadSignatures(); // Recargar las asignaturas
+                  Navigator.of(context).pop();
+                  _loadSignatures();
                 }
               },
               child: const Text('Aceptar'),
@@ -198,7 +194,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
+                Navigator.of(context).pop();
               },
               child: const Text('Cancelar'),
             ),
@@ -217,8 +213,8 @@ class _SignatureScreenState extends State<SignatureScreen> {
                   ..courseId = widget.courseId;
 
                 await isarService.addSignature(signature);
-                Navigator.of(context).pop(); // Cierra el diálogo
-                _loadSignatures(); // Recargar las asignaturas
+                Navigator.of(context).pop();
+                _loadSignatures();
               },
               child: const Text('Aceptar'),
             ),

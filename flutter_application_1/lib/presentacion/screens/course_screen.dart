@@ -76,7 +76,7 @@ class _CourseScreenState extends State<CourseScreen> {
                   subtitle: Text('${course.professor}\n${course.description}'),
                   selected: course == selectedCourse,
                   onTap: () {
-                    context.go('/signature', extra: course.id);
+                    context.go('/signature/${course.id}');
                   },
                   onLongPress: () {
                     setState(() {

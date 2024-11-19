@@ -5,7 +5,6 @@ import 'package:flutter_application_1/presentacion/screens/welcome_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/course_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/signature_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/content_screen.dart';
-// import 'package:flutter_application_1/presentacion/screens/counternumber_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,15 +24,19 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => const CourseScreen(),
       ),
       GoRoute(
-        path: '/signature',
+        path: '/signature/:courseId',
         builder: (context, state) {
-          final courseId = state.extra as int;
+          final courseId = int.parse(state.pathParameters['courseId']!);
           return SignatureScreen(courseId: courseId);
         },
       ),
       GoRoute(
-        path: '/content',
-        builder: (context, state) => const ContentScreen(),
+        path: '/content/:courseId/:signatureId',
+        builder: (context, state) {
+          final courseId = int.parse(state.pathParameters['courseId']!);
+          final signatureId = int.parse(state.pathParameters['signatureId']!);
+          return ContentScreen(courseId: courseId, signatureId: signatureId);
+        },
       ),
     ],
   );
@@ -46,7 +49,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      routerConfig: _router, // Aquí usamos routerConfig en lugar de home
+      routerConfig: _router,
     );
   }
 }
