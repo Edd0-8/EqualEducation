@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:flutter_application_1/main.dart';
 import 'package:go_router/go_router.dart';
 
 class ContentScreen extends StatefulWidget {
@@ -25,12 +24,30 @@ class _ContentScreenState extends State<ContentScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Map<String, dynamic>> _messages = []; // Lista para almacenar los mensajes
 
-
-    // Inicializa el reconocimiento de voz
+  // Inicializa el reconocimiento de voz
+// Inicializa el reconocimiento de voz
+// Inicializa el reconocimiento de voz
   Future<void> _initSpeech() async {
     bool available = await _speech.initialize(
-      onStatus: (status) => print('Status: $status'),
-      onError: (error) => print('Error: $error'),
+      onStatus: (status) {
+        print('Status: $status');
+        if (status == 'done' && _isListening) {
+          // Si el reconocimiento termina pero el usuario no detuvo, reiniciar
+          _startListening();
+        }
+        if (status == 'notListening') {
+          // Actualiza el estado visual cuando el reconocimiento se detiene
+          setState(() {
+            _isListening = false;
+          });
+        }
+      },
+      onError: (error) {
+        print('Error: $error');
+        setState(() {
+          _isListening = false; // Asegurar que el botón vuelva a mostrar el estado correcto
+        });
+      },
     );
 
     if (available) {
@@ -54,11 +71,11 @@ class _ContentScreenState extends State<ContentScreen> {
               'text': _transcribedText,
               'isTranscribed': true,
             });
-            _transcribedText = ''; // Resetea el texto transcrito.
+            _transcribedText = '';
           }
         });
       },
-      localeId: 'es_CL', // Cambia al idioma que prefieras.
+      localeId: 'es_ES', // Cambia según el idioma preferido
     );
   }
 
@@ -69,6 +86,7 @@ class _ContentScreenState extends State<ContentScreen> {
       _isListening = false;
     });
   }
+
 
   // Envía un mensaje escrito
   void _sendMessage() {
@@ -82,19 +100,6 @@ class _ContentScreenState extends State<ContentScreen> {
       });
       _messageController.clear();
     }
-  }
-
-  void _simulateTranscription(){
-    Future.delayed(const Duration(seconds: 1), (){
-      if (mounted){
-        setState(() {
-          _messages.add({
-            'text': 'Mensaje transcrito automatico',
-            'isTranscribed': true,
-          });
-        });
-      }
-    });
   }
 
   @override
@@ -114,20 +119,36 @@ class _ContentScreenState extends State<ContentScreen> {
           // Sección del chat
           Expanded(
             child: ListView.builder(
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isListening && _transcribedText.isNotEmpty ? 1 : 0), // Incluir mensaje transitorio
               reverse: true, // Mostrar los mensajes más recientes al final
               itemBuilder: (context, index) {
-                final message = _messages[_messages.length - 1 - index];
+                // Mostrar texto transcrito en tiempo real
+                if (_isListening && index == 0 && _transcribedText.isNotEmpty) {
+                  return Align(
+                    alignment: Alignment.centerRight, // Alineación derecha
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        _transcribedText,
+                        style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                  );
+                }
+
+                // Mostrar mensajes transcritos o escritos
+                final message = _messages[_messages.length - 1 - index + (_isListening && _transcribedText.isNotEmpty ? 1 : 0)];
                 final isTranscribed = message['isTranscribed'];
                 return Align(
-                  alignment: isTranscribed
-                      ? Alignment.centerRight // Alineación derecha para transcritos
-                      : Alignment.centerLeft, // Alineación izquierda para escritos
+                  alignment: isTranscribed ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 10),
+                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                     decoration: BoxDecoration(
                       color: isTranscribed ? Colors.blue[200] : Colors.grey[300],
                       borderRadius: BorderRadius.circular(10),
@@ -170,7 +191,7 @@ class _ContentScreenState extends State<ContentScreen> {
                 ),
                 const SizedBox(width: 8),
                 FloatingActionButton(
-                  onPressed: (){
+                  onPressed: () {
                     if (_isListening) {
                       _stopListening(); // Detiene el reconocimiento de voz
                     } else {
@@ -179,7 +200,8 @@ class _ContentScreenState extends State<ContentScreen> {
                   },
                   heroTag: null,
                   mini: true,
-                  child: Icon(_isListening? Icons.stop : Icons.mic),)
+                  child: Icon(_isListening ? Icons.stop : Icons.mic),
+                ),
               ],
             ),
           ),
