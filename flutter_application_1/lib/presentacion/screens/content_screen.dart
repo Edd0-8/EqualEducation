@@ -324,7 +324,7 @@ class _ContentScreenState extends State<ContentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contenido'),
+        title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -602,13 +602,15 @@ class _ContentScreenState extends State<ContentScreen> {
                         horizontal: 15, vertical: 10),
                     decoration: BoxDecoration(
                       color: message.isTranscribed
-                          ? Colors.blue[200]
-                          : Colors.grey[300], // Fondo azul o gris
+                          ? Colors.black
+                          : const Color.fromARGB(255, 129, 129, 129), // Fondo azul o gris
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       message.text ?? '',
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20),
                     ),
                   ),
                 );
@@ -639,7 +641,10 @@ class _ContentScreenState extends State<ContentScreen> {
                 FloatingActionButton(
                   onPressed: _sendMessage,
                   mini: true,
-                  child: const Icon(Icons.send),
+                  backgroundColor: Colors.black,
+                  child: const Icon(
+                    color: Colors.white,
+                    Icons.send),
                 ),
                 const SizedBox(width: 8),
                 FloatingActionButton(
@@ -652,7 +657,10 @@ class _ContentScreenState extends State<ContentScreen> {
                   },
                   heroTag: false,
                   mini: true,
-                  child: Icon(_isListening ? Icons.stop : Icons.mic),
+                  backgroundColor: Colors.black,
+                  child: Icon(
+                    color: Colors.white,
+                    _isListening ? Icons.stop : Icons.mic),
                 ),
               ],
             ),

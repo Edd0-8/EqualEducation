@@ -15,7 +15,9 @@ class SignatureScreen extends StatefulWidget {
 
 class _SignatureScreenState extends State<SignatureScreen> {
   final IsarService isarService = IsarService();
+  final TextEditingController nameController = TextEditingController();
   List<Signature> signatures = [];
+  Signature? selectedSignature;
 
   @override
   void initState() {
@@ -24,10 +26,10 @@ class _SignatureScreenState extends State<SignatureScreen> {
   }
 
   Future<void> _loadSignatures() async {
-    final loadedSignatures = await isarService.getSignaturesByCourseId(widget.courseId);
+    final loadedSignatures =
+        await isarService.getSignaturesByCourseId(widget.courseId);
     setState(() {
       signatures = loadedSignatures;
-      print('Asignaturas cargadas ${signatures.length}');
     });
   }
 
@@ -35,153 +37,128 @@ class _SignatureScreenState extends State<SignatureScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clase'),
+        title: const Text(""),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            context.go('/course'); // Regresa a la pantalla de cursos
+            context.go('/course');
           },
         ),
+        actions: selectedSignature != null
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.black),
+                  onPressed: () {
+                    _showSignatureFormDialog(context,
+                        signature: selectedSignature);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    _confirmDeleteSignature(selectedSignature!);
+                  },
+                ),
+              ]
+            : [],
+        elevation: 0,
+        backgroundColor: Colors.transparent,
       ),
-      body: signatures.isEmpty
-          ? const Center(child: Text("No hay clases creadas para este curso\nSeleccione '+' para registrar una clase"))
-          : ListView.builder(
-              itemCount: signatures.length,
-              itemBuilder: (context, index) {
-                final signature = signatures[index];
-                final formattedDate = DateFormat('dd/MM/yyyy').format(signature.date);
-
-                return ListTile(
-                  title: Text(signature.name),
-                  subtitle: Text('Fecha: $formattedDate'),
-                  onTap: () {
-                    // Navegar a ContentScreen con courseId y signatureId
-                    context.go('/content/${widget.courseId}/${signature.id}');
-                  },
-                  onLongPress: () {
-                    _showOptionsDialog(context, signature);
-                  },
-                );
-              },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Mis Clases",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              "Selecciona o crea una nueva clase",
+              style: TextStyle(color: Colors.grey),
+            ),
+            const Divider(thickness: 1, color: Colors.grey),
+            Expanded(
+              child: signatures.isEmpty
+                  ? const Center(
+                      child: Text(
+                          "No hay clases creadas para este curso\nSeleccione '+' para registrar una clase"),
+                    )
+                  : ListView.builder(
+                      itemCount: signatures.length,
+                      itemBuilder: (context, index) {
+                        final signature = signatures[index];
+                        final formattedDate =
+                            DateFormat('dd/MM/yyyy').format(signature.date);
+
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                signature.name,
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              subtitle: Text(
+                                'Fecha: $formattedDate',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              selected: signature == selectedSignature,
+                              selectedTileColor: Colors.grey[300],
+                              onTap: () {
+                                context.go(
+                                    '/content/${widget.courseId}/${signature.id}');
+                              },
+                              onLongPress: () {
+                                setState(() {
+                                  selectedSignature =
+                                      signature == selectedSignature
+                                          ? null
+                                          : signature;
+                                });
+                              },
+                            ),
+                            const Divider(
+                              thickness: 1,
+                              color: Colors.grey, // Línea divisoria
+                              height: 1, // Espaciado entre las clases
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
         onPressed: () {
           _showSignatureFormDialog(context);
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  // Dialog para seleccionar editar o eliminar
-  void _showOptionsDialog(BuildContext context, Signature signature) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Opciones de Clase'),
-          content: const Text('¿Qué deseas hacer con esta clase?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showEditSignatureFormDialog(context, signature);
-              },
-              child: const Text('Editar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _confirmDeleteSignature(signature);
-              },
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Confirmación para eliminar asignatura
-  void _confirmDeleteSignature(Signature signature) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar Clase'),
-          content: const Text('¿Estás seguro de que deseas eliminar esta clase?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () async {
-                await isarService.deleteSignature(signature.id);
-                Navigator.of(context).pop();
-                _loadSignatures();
-              },
-              child: const Text('Aceptar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Dialog para editar asignatura
-  void _showEditSignatureFormDialog(BuildContext context, Signature signature) {
-    final TextEditingController nameController = TextEditingController(text: signature.name);
+  void _showSignatureFormDialog(BuildContext context, {Signature? signature}) {
+    nameController.text = signature?.name ?? '';
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Editar Clase'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Clase'),
-              ),
-            ],
+          title: Text(
+            signature == null ? 'Agregar Clase' : 'Editar Clase',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  color: Colors.black,
+                ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty) {
-                  signature.name = nameController.text;
-                  await isarService.updateSignature(signature);
-                  Navigator.of(context).pop();
-                  _loadSignatures();
-                }
-              },
-              child: const Text('Aceptar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Dialog para agregar nueva asignatura
-  void _showSignatureFormDialog(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Agregar Clase'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -202,18 +179,30 @@ class _SignatureScreenState extends State<SignatureScreen> {
               onPressed: () async {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, ingresa un nombre para la Clase.')),
+                    const SnackBar(
+                        content: Text(
+                            'Por favor, ingresa un nombre para la Clase.')),
                   );
                   return;
                 }
 
-                final signature = Signature()
+                final updatedSignature = signature ?? Signature();
+                updatedSignature
+                  // ..id = signature.id
                   ..name = nameController.text
-                  ..date = DateTime.now()
+                  ..date = signature?.date ?? DateTime.now()
                   ..courseId = widget.courseId;
 
-                await isarService.addSignature(signature);
+                if (signature == null) {
+                  await isarService.addSignature(updatedSignature);
+                } else {
+                  await isarService.updateSignature(updatedSignature);
+                }
+
                 Navigator.of(context).pop();
+                setState(() {
+                  selectedSignature = null;
+                });
                 _loadSignatures();
               },
               child: const Text('Aceptar'),
@@ -222,5 +211,46 @@ class _SignatureScreenState extends State<SignatureScreen> {
         );
       },
     );
+  }
+
+  void _confirmDeleteSignature(Signature signature) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Eliminar Clase'),
+          content: const Text(
+              'Si eliminas esta clase, también se eliminará el contenido relacionado. ¿Estás seguro de que deseas eliminarla?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await isarService.deleteSignatureWithContent(signature.id);
+                Navigator.of(context).pop();
+                setState(() {
+                  selectedSignature = null;
+                });
+                _loadSignatures();
+              },
+              child: const Text(
+                'Aceptar',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 }

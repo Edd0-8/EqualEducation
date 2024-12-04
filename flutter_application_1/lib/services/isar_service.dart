@@ -80,9 +80,19 @@ class IsarService {
     });
   }
 
-  Future<void> deleteSignature(int id) async {
+  Future<void> deleteSignatureWithContent(int id) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
+      // Obtener el contenido asociado a la signature
+      final content =
+          await isar.contents.filter().signatureIdEqualTo(id).findFirst();
+      if (content != null) {
+        // Eliminar todos los blocks relacionados al contenido
+        await isar.blocks.filter().contentIdEqualTo(content.id).deleteAll();
+        // Eliminar el contenido relacionado
+        await isar.contents.delete(content.id);
+      }
+      // Eliminar la signature
       await isar.signatures.delete(id);
     });
   }
@@ -104,7 +114,10 @@ class IsarService {
 
   Future<Content?> getContentBySignatureId(int signatureId) async {
     final isar = await _openDB();
-    return await isar.contents.filter().signatureIdEqualTo(signatureId).findFirst();
+    return await isar.contents
+        .filter()
+        .signatureIdEqualTo(signatureId)
+        .findFirst();
   }
 
   Future<void> updateContent(Content content) async {
