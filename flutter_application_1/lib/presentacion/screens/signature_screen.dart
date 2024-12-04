@@ -35,7 +35,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Asignaturas'),
+        title: const Text('Clase'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -44,7 +44,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
         ),
       ),
       body: signatures.isEmpty
-          ? const Center(child: Text("No hay asignaturas para este curso"))
+          ? const Center(child: Text("No hay clases creadas para este curso\nSeleccione '+' para registrar una clase"))
           : ListView.builder(
               itemCount: signatures.length,
               itemBuilder: (context, index) {
@@ -79,8 +79,8 @@ class _SignatureScreenState extends State<SignatureScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Opciones de Asignatura'),
-          content: const Text('¿Qué deseas hacer con esta asignatura?'),
+          title: const Text('Opciones de Clase'),
+          content: const Text('¿Qué deseas hacer con esta clase?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -108,8 +108,8 @@ class _SignatureScreenState extends State<SignatureScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Eliminar Asignatura'),
-          content: Text('¿Estás seguro de que deseas eliminar esta asignatura?'),
+          title: const Text('Eliminar Clase'),
+          content: const Text('¿Estás seguro de que deseas eliminar esta clase?'),
           actions: [
             TextButton(
               onPressed: () {
@@ -139,13 +139,13 @@ class _SignatureScreenState extends State<SignatureScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Editar Asignatura'),
+          title: const Text('Editar Clase'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Asignatura'),
+                decoration: const InputDecoration(labelText: 'Clase'),
               ),
             ],
           ),
@@ -181,13 +181,13 @@ class _SignatureScreenState extends State<SignatureScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Agregar asignatura'),
+          title: const Text('Agregar Clase'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Asignatura'),
+                decoration: const InputDecoration(labelText: 'Clase'),
               ),
             ],
           ),
@@ -202,7 +202,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
               onPressed: () async {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, ingresa un nombre para la asignatura.')),
+                    const SnackBar(content: Text('Por favor, ingresa un nombre para la Clase.')),
                   );
                   return;
                 }

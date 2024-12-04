@@ -31,6 +31,11 @@ const BlockSchema = CollectionSchema(
       id: 2,
       name: r'contentId',
       type: IsarType.long,
+    ),
+    r'timestamp': PropertySchema(
+      id: 3,
+      name: r'timestamp',
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _blockEstimateSize,
@@ -67,6 +72,7 @@ void _blockSerialize(
   writer.writeString(offsets[0], object.blockContent);
   writer.writeString(offsets[1], object.blockType);
   writer.writeLong(offsets[2], object.contentId);
+  writer.writeDateTime(offsets[3], object.timestamp);
 }
 
 Block _blockDeserialize(
@@ -80,6 +86,7 @@ Block _blockDeserialize(
   object.blockType = reader.readString(offsets[1]);
   object.contentId = reader.readLong(offsets[2]);
   object.id = id;
+  object.timestamp = reader.readDateTime(offsets[3]);
   return object;
 }
 
@@ -96,6 +103,8 @@ P _blockDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 2:
       return (reader.readLong(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -553,6 +562,59 @@ extension BlockQueryFilter on QueryBuilder<Block, Block, QFilterCondition> {
       ));
     });
   }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> timestampEqualTo(
+      DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> timestampGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'timestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> timestampLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'timestamp',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterFilterCondition> timestampBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'timestamp',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension BlockQueryObject on QueryBuilder<Block, Block, QFilterCondition> {}
@@ -593,6 +655,18 @@ extension BlockQuerySortBy on QueryBuilder<Block, Block, QSortBy> {
   QueryBuilder<Block, Block, QAfterSortBy> sortByContentIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'contentId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> sortByTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> sortByTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timestamp', Sort.desc);
     });
   }
 }
@@ -645,6 +719,18 @@ extension BlockQuerySortThenBy on QueryBuilder<Block, Block, QSortThenBy> {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
+
+  QueryBuilder<Block, Block, QAfterSortBy> thenByTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timestamp', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Block, Block, QAfterSortBy> thenByTimestampDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'timestamp', Sort.desc);
+    });
+  }
 }
 
 extension BlockQueryWhereDistinct on QueryBuilder<Block, Block, QDistinct> {
@@ -665,6 +751,12 @@ extension BlockQueryWhereDistinct on QueryBuilder<Block, Block, QDistinct> {
   QueryBuilder<Block, Block, QDistinct> distinctByContentId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'contentId');
+    });
+  }
+
+  QueryBuilder<Block, Block, QDistinct> distinctByTimestamp() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'timestamp');
     });
   }
 }
@@ -691,6 +783,12 @@ extension BlockQueryProperty on QueryBuilder<Block, Block, QQueryProperty> {
   QueryBuilder<Block, int, QQueryOperations> contentIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'contentId');
+    });
+  }
+
+  QueryBuilder<Block, DateTime, QQueryOperations> timestampProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'timestamp');
     });
   }
 }

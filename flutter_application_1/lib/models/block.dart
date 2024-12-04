@@ -10,4 +10,5 @@ class Block {
   late int contentId; // Relación con la colección Content
   late String blockType;
   late String blockContent;
+  late final DateTime timestamp;
 }

@@ -6,11 +6,11 @@ import 'package:flutter_application_1/models/content.dart';
 import 'package:flutter_application_1/models/block.dart';
 
 class IsarService {
-  static Isar? _db; //Variable que almacena la instancia de Isar
+  static Isar? _db; // Variable que almacena la instancia de Isar
 
-  //Apertura de Base de Datos y Validacion
+  // Apertura de Base de Datos y Validación
   Future<Isar> _openDB() async {
-    if (_db != null){
+    if (_db != null) {
       return _db!;
     }
 
@@ -23,10 +23,9 @@ class IsarService {
     return _db!;
   }
 
-  
-
-  // CRUD for Courses
-  // Método para agregar un curso
+  // ===========================================================
+  // CRUD para Courses
+  // ===========================================================
   Future<void> addCourse(Course course) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
@@ -34,19 +33,16 @@ class IsarService {
     });
   }
 
-  // Método para obtener todos los cursos
   Future<List<Course>> getCourses() async {
     final isar = await _openDB();
     return await isar.courses.where().findAll();
   }
 
-  // Método para obtener un curso específico por ID
   Future<Course?> getCourseById(int id) async {
     final isar = await _openDB();
-    return await isar.courses.get(id); // Obtiene el curso con el ID especificado
+    return await isar.courses.get(id);
   }
 
-  // Método para actualizar un curso
   Future<void> updateCourse(Course course) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
@@ -54,7 +50,6 @@ class IsarService {
     });
   }
 
-  // Método para eliminar un curso
   Future<void> deleteCourse(int courseId) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
@@ -63,22 +58,19 @@ class IsarService {
     });
   }
 
-  // CRUD for Signatures
+  // ===========================================================
+  // CRUD para Signatures
+  // ===========================================================
   Future<void> addSignature(Signature signature) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
       await isar.signatures.put(signature);
-      
     });
-    print('Asignatura guardada: Name: ${signature.name}, Id: ${signature.id}, Date: ${signature.date}, IdCourse: ${signature.courseId}');
   }
 
   Future<List<Signature>> getSignaturesByCourseId(int courseId) async {
     final isar = await _openDB();
-    return await isar.signatures
-        .filter()
-        .courseIdEqualTo(courseId)
-        .findAll();
+    return await isar.signatures.filter().courseIdEqualTo(courseId).findAll();
   }
 
   Future<void> updateSignature(Signature signature) async {
@@ -95,8 +87,9 @@ class IsarService {
     });
   }
 
-
-  // CRUD for Content
+  // ===========================================================
+  // CRUD para Content
+  // ===========================================================
   Future<void> addContent(Content content) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
@@ -107,6 +100,11 @@ class IsarService {
   Future<List<Content>> getContents() async {
     final isar = await _openDB();
     return await isar.contents.where().findAll();
+  }
+
+  Future<Content?> getContentBySignatureId(int signatureId) async {
+    final isar = await _openDB();
+    return await isar.contents.filter().signatureIdEqualTo(signatureId).findFirst();
   }
 
   Future<void> updateContent(Content content) async {
@@ -123,7 +121,9 @@ class IsarService {
     });
   }
 
-  // CRUD for Block
+  // ===========================================================
+  // CRUD para Block
+  // ===========================================================
   Future<void> addBlock(Block block) async {
     final isar = await _openDB();
     await isar.writeTxn(() async {
@@ -134,6 +134,11 @@ class IsarService {
   Future<List<Block>> getBlocks() async {
     final isar = await _openDB();
     return await isar.blocks.where().findAll();
+  }
+
+  Future<List<Block>> getBlocksByContentId(int contentId) async {
+    final isar = await _openDB();
+    return await isar.blocks.filter().contentIdEqualTo(contentId).findAll();
   }
 
   Future<void> updateBlock(Block block) async {
