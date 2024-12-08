@@ -4,6 +4,7 @@ import 'package:flutter_application_1/models/course.dart';
 import 'package:flutter_application_1/models/signature.dart';
 import 'package:flutter_application_1/models/content.dart';
 import 'package:flutter_application_1/models/block.dart';
+import 'package:flutter_application_1/models/task.dart';
 
 class IsarService {
   static Isar? _db; // Variable que almacena la instancia de Isar
@@ -16,7 +17,7 @@ class IsarService {
 
     final dir = await getApplicationDocumentsDirectory();
     _db = await Isar.open(
-      [CourseSchema, SignatureSchema, ContentSchema, BlockSchema],
+      [CourseSchema, SignatureSchema, ContentSchema, BlockSchema, TaskSchema],
       directory: dir.path,
     );
 
@@ -165,6 +166,40 @@ class IsarService {
     final isar = await _openDB();
     await isar.writeTxn(() async {
       await isar.blocks.delete(id);
+    });
+  }
+
+  // ===========================================================
+  // CRUD para Task
+  // ===========================================================
+  // CRUD para Task
+  Future<void> addTask(Task task) async {
+    final isar = await _openDB();
+    await isar.writeTxn(() async {
+      // Asigna la fecha actual al timestamp si no está definido
+      task.timestamp = DateTime.now();
+      await isar.tasks.put(task);
+    });
+  }
+
+  Future<List<Task>> getTasks() async {
+    final isar = await _openDB();
+    return await isar.tasks.where().findAll();
+  }
+
+  Future<void> updateTask(Task task) async {
+    final isar = await _openDB();
+    await isar.writeTxn(() async {
+      // Mantén la fecha original si existe, o asigna la actual si no
+      task.timestamp = DateTime.now();
+      await isar.tasks.put(task);
+    });
+  }
+
+  Future<void> deleteTask(int taskId) async {
+    final isar = await _openDB();
+    await isar.writeTxn(() async {
+      await isar.tasks.delete(taskId);
     });
   }
 }

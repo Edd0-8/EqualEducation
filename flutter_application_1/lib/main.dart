@@ -5,6 +5,7 @@ import 'package:flutter_application_1/presentacion/screens/welcome_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/course_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/signature_screen.dart';
 import 'package:flutter_application_1/presentacion/screens/content_screen.dart';
+import 'package:flutter_application_1/presentacion/screens/task_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -37,6 +38,10 @@ class MyApp extends StatelessWidget {
           final signatureId = int.parse(state.pathParameters['signatureId']!);
           return ContentScreen(courseId: courseId, signatureId: signatureId);
         },
+      ),
+      GoRoute(
+        path: '/tasks',
+        builder: (context, state) => const TaskScreen(),
       ),
     ],
   );
